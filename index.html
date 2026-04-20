@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLOTH BID Cost Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --orange: #C85D1E;
+      --orange-pale: #F9EDE3;
+      --orange-border: #E5C9B2;
+      --dark: #111010;
+      --mid: #6B6560;
+      --rule: #D4C9C0;
+      --white: #FDFAF7;
+      --green: #1E5C3A;
+      --green-pale: #E8F2EC;
+      --green-border: #B5D9C4;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Bitter', serif;
+      background: var(--white);
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    /* LANG BAR */
+    .lang-bar {
+      background: var(--dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 40px;
+    }
+    .lang-bar .masthead {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .lang-btns { display: flex; gap: 6px; }
+    .lang-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.45);
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.02em;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+    }
+    .lang-btn.active {
+      background: var(--orange);
+      color: var(--white);
+      border-color: var(--orange);
+    }
+
+    /* AUDIENCE SCREEN */
+    .audience-screen {
+      min-height: calc(100vh - 45px);
+      background: var(--white);
+      color: var(--dark);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .aud-top {
+      border-bottom: 2px solid var(--dark);
+      padding: 64px 60px 48px;
+    }
+
+    .aud-overline {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 24px;
+    }
+
+    .aud-headline {
+      font-family: 'Bitter', serif;
+      font-size: clamp(42px, 6vw, 80px);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      color: var(--dark);
+    }
+
+    .aud-sub {
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--mid);
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    .aud-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      flex: 1;
+    }
+    @media (max-width: 600px) {
+      .aud-cards { grid-template-columns: 1fr; }
+      .aud-top { padding: 48px 28px 36px; }
+    }
+
+    .aud-card {
+      padding: 48px 52px;
+      border-right: 1px solid var(--rule);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .aud-card:last-child { border-right: none; }
+    .aud-card:hover { background: var(--orange-pale); }
+    .aud-card:hover .aud-card-arrow { transform: translateX(6px); }
+
+    .aud-card-num {
+      font-family: 'Bitter', serif;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      color: var(--rule);
+      margin-bottom: 32px;
+    }
+
+    .aud-card-title {
+      font-family: 'Bitter', serif;
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 14px;
+      color: var(--dark);
+    }
+
+    .aud-card-desc {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--mid);
+      line-height: 1.65;
+      margin-bottom: 40px;
+      max-width: 280px;
+    }
+
+    .aud-card-arrow {
+      font-family: 'Bitter', serif;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      color: var(--orange);
+      text-transform: uppercase;
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    /* CALCULATOR VIEW */
+    .calculator-view { display: none; }
+    .calculator-view.active { display: block; }
+
+    /* HEADER */
+    .calc-header {
+      background: var(--orange);
+      padding: 0 60px;
+    }
+    @media (max-width: 600px) { .calc-header { padding: 0 28px; } }
+
+    .calc-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .back-btn {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: white; }
+
+    .audience-badge {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .calc-header-body { padding: 48px 0 52px; }
+
+    .calc-header-overline {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 16px;
+    }
+
+    .calc-header h1 {
+      font-family: 'Bitter', serif;
+      font-size: clamp(32px, 5vw, 60px);
+      font-weight: 900;
+      color: white;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      max-width: 680px;
+    }
+
+    .calc-header p {
+      font-size: 14px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.7);
+      max-width: 520px;
+      line-height: 1.7;
+    }
+
+    /* MAIN */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 64px 40px 80px;
+    }
+    @media (max-width: 600px) { .main { padding: 48px 24px 60px; } }
+
+    /* SECTION */
+    .section {
+      border-top: 2px solid var(--dark);
+      padding: 48px 0;
+    }
+
+    .section-label {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-family: 'Bitter', serif;
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 700;
+      margin-bottom: 12px;
+      line-height: 1.1;
+    }
+
+    .section-sub {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--mid);
+      line-height: 1.7;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
+
+    /* FORMULA */
+    .formula-block {
+      background: var(--dark);
+      color: var(--white);
+      padding: 32px 40px;
+      margin-bottom: 40px;
+    }
+
+    .formula-label {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 16px;
+    }
+
+    .formula-eq {
+      font-family: 'Bitter', serif;
+      font-size: clamp(12px, 2vw, 15px);
+      line-height: 1.9;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .formula-eq .hl { color: var(--orange); font-weight: 600; }
+
+    /* SLIDERS */
+    .slider-group { margin-bottom: 36px; }
+
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    .slider-head label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--dark);
+    }
+
+    .slider-head .hint {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      color: var(--mid);
+      white-space: nowrap;
+    }
+
+    .slider-number {
+      font-family: 'Bitter', serif;
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 600;
+      color: var(--orange);
+      margin: 10px 0;
+      line-height: 1;
+    }
+
+    .slider-number small {
+      font-size: 0.42em;
+      font-weight: 400;
+      color: var(--mid);
+      margin-left: 4px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to right, var(--orange) 0%, var(--orange) var(--pct, 15%), var(--rule) var(--pct, 15%), var(--rule) 100%);
+      outline: none;
+      cursor: pointer;
+      margin-bottom: 6px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--orange);
+      border: 2px solid var(--white);
+      box-shadow: 0 0 0 1px var(--orange);
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--orange);
+      border: 2px solid var(--white);
+      cursor: pointer;
+    }
+
+    .slider-minmax {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      color: rgba(0,0,0,0.25);
+    }
+
+    /* RESULT */
+    .result-strip {
+      background: var(--orange);
+      padding: 40px 48px;
+      margin: 0 -40px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 32px;
+    }
+    @media (max-width: 600px) {
+      .result-strip { margin: 0 -24px; padding: 32px 24px; grid-template-columns: 1fr; }
+    }
+
+    .result-main-label {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 8px;
+    }
+
+    .result-main-number {
+      font-family: 'Bitter', serif;
+      font-size: clamp(52px, 8vw, 96px);
+      font-weight: 900;
+      color: white;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+    }
+
+    .result-secondary {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-align: right;
+    }
+    @media (max-width: 600px) { .result-secondary { flex-direction: row; text-align: left; } }
+
+    .rs-item .rs-label {
+      font-family: 'Bitter', serif;
+      font-size: 9px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 3px;
+    }
+
+    .rs-item .rs-value {
+      font-family: 'Bitter', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* BREAKDOWN */
+    .breakdown-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--rule);
+      margin-top: 1px;
+    }
+    @media (max-width: 500px) { .breakdown-row { grid-template-columns: 1fr; } }
+
+    .breakdown-cell {
+      background: var(--orange-pale);
+      padding: 20px 24px;
+    }
+
+    .bc-label {
+      font-family: 'Bitter', serif;
+      font-size: 9px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 6px;
+    }
+
+    .bc-value {
+      font-family: 'Bitter', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--orange);
+    }
+
+    .bc-sub {
+      font-size: 11px;
+      color: var(--mid);
+      margin-top: 3px;
+    }
+
+    /* CONTEXT NOTE */
+    .context-note {
+      border-left: 3px solid var(--orange);
+      padding: 14px 18px;
+      margin-top: 28px;
+      background: var(--orange-pale);
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--dark);
+    }
+    .context-note strong { color: var(--orange); }
+
+    /* DISTRIBUTION */
+    .dist-block {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--rule);
+    }
+
+    .dist-label {
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 14px;
+    }
+
+    .dist-row {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .dist-row label { font-size: 13px; color: var(--mid); }
+
+    .dist-input {
+      border: none;
+      border-bottom: 2px solid var(--dark);
+      background: none;
+      font-family: 'Bitter', serif;
+      font-size: 24px;
+      font-weight: 600;
+      width: 72px;
+      color: var(--dark);
+      padding: 2px 0;
+      text-align: center;
+    }
+    .dist-input:focus { outline: none; border-color: var(--orange); }
+
+    .dist-result {
+      font-family: 'Bitter', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--orange);
+    }
+
+    /* TAX SECTION */
+    .tax-section {
+      border-top: 2px solid var(--dark);
+      padding: 48px 0;
+      display: none;
+    }
+    body.audience-merchant .tax-section { display: block; }
+
+    .tax-section .section-label { color: var(--green); }
+    .tax-section input[type="range"] {
+      background: linear-gradient(to right, var(--green) 0%, var(--green) var(--pct, 28%), var(--rule) var(--pct, 28%), var(--rule) 100%);
+    }
+    .tax-section input[type="range"]::-webkit-slider-thumb { background: var(--green); box-shadow: 0 0 0 1px var(--green); }
+    .tax-section input[type="range"]::-moz-range-thumb { background: var(--green); }
+    .tax-section .slider-number { color: var(--green); }
+
+    .tax-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--rule);
+      margin-top: 28px;
+    }
+    @media (max-width: 500px) { .tax-grid { grid-template-columns: 1fr; } }
+
+    .tax-cell {
+      background: var(--green-pale);
+      padding: 22px 18px;
+    }
+
+    .tc-label {
+      font-family: 'Bitter', serif;
+      font-size: 9px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .tc-value {
+      font-family: 'Bitter', serif;
+      font-size: clamp(18px, 2.5vw, 26px);
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    .tc-sub {
+      font-size: 11px;
+      color: var(--mid);
+      margin-top: 4px;
+    }
+
+    .tax-disclaimer {
+      font-size: 12px;
+      color: var(--mid);
+      line-height: 1.65;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule);
+    }
+
+    /* COMPARISON */
+    .comp-section {
+      border-top: 2px solid var(--dark);
+      padding: 48px 0;
+      display: none;
+    }
+    body.audience-merchant .comp-section { display: block; }
+
+    .comp-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 32px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 500px) { .comp-inputs { grid-template-columns: 1fr; } }
+
+    .comp-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mid);
+      margin-bottom: 6px;
+    }
+
+    .comp-field input {
+      width: 100%;
+      border: none;
+      border-bottom: 2px solid var(--rule);
+      background: none;
+      font-family: 'Bitter', serif;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--dark);
+      padding: 6px 0;
+      transition: border-color 0.15s;
+    }
+    .comp-field input:focus { outline: none; border-color: var(--orange); }
+    .comp-field input::placeholder { color: rgba(0,0,0,0.2); }
+
+    .comp-result-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--rule);
+    }
+    @media (max-width: 500px) { .comp-result-row { grid-template-columns: 1fr; } }
+
+    .comp-cell {
+      background: var(--white);
+      padding: 28px 24px;
+      border-top: 3px solid var(--orange);
+    }
+
+    .cc-label {
+      font-family: 'Bitter', serif;
+      font-size: 9px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 8px;
+    }
+
+    .cc-value {
+      font-family: 'Bitter', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 900;
+      color: var(--orange);
+      line-height: 1;
+    }
+
+    .cc-sub {
+      font-size: 12px;
+      color: var(--mid);
+      margin-top: 6px;
+    }
+
+    /* PROPERTY VALUE */
+    .propval-section {
+      border-top: 2px solid var(--dark);
+      padding: 48px 0;
+      display: none;
+    }
+    body.audience-owner .propval-section { display: block; }
+
+    /* AUDIENCE SPECIFIC */
+    .merchant-only { display: none; }
+    .owner-only { display: none; }
+    body.audience-merchant .merchant-only { display: block; }
+    body.audience-owner .owner-only { display: block; }
+
+    /* FOOTER */
+    .calc-footer {
+      border-top: 1px solid var(--rule);
+      padding: 28px 0 0;
+      font-family: 'Bitter', serif;
+      font-size: 10px;
+      letter-spacing: 0.01em;
+      color: rgba(0,0,0,0.25);
+      line-height: 1.8;
+    }
+
+    /* LANGUAGE */
+    .es { display: none; }
+    body.lang-es .en { display: none; }
+    body.lang-es .es { display: block; }
+    body.lang-es .es-inline { display: inline; }
+    body.lang-es .en-inline { display: none; }
+    .es-inline { display: none; }
+    .en-inline { display: inline; }
+  </style>
+</head>
+<body>
+
+  <!-- LANG BAR -->
+  <div class="lang-bar">
+    <span class="masthead">CLOTH · Washington Heights BID Formation</span>
+    <div class="lang-btns">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('es')">ES</button>
+    </div>
+  </div>
+
+  <!-- AUDIENCE SCREEN -->
+  <div class="audience-screen" id="audienceScreen">
+    <div class="aud-top">
+      <div class="aud-overline en">Cost Calculator</div>
+      <div class="aud-overline es">Calculadora de Costos</div>
+      <h1 class="aud-headline en">Select your<br>role to begin.</h1>
+      <h1 class="aud-headline es">Seleccione su<br>rol para comenzar.</h1>
+      <p class="aud-sub en">This calculator is built for both merchants and property owners. Select who you are to see information relevant to your situation.</p>
+      <p class="aud-sub es">Esta calculadora está diseñada para comerciantes y dueños de propiedades. Seleccione quién es usted para ver información relevante a su situación.</p>
+    </div>
+    <div class="aud-cards">
+      <div class="aud-card" onclick="setAudience('merchant')">
+        <div class="aud-card-num">01</div>
+        <div class="aud-card-title en">I am a Merchant</div>
+        <div class="aud-card-title es">Soy Comerciante</div>
+        <div class="aud-card-desc en">I rent or operate a commercial space on the Broadway corridor.</div>
+        <div class="aud-card-desc es">Alquilo u opero un espacio comercial en el corredor de Broadway.</div>
+        <div class="aud-card-arrow en">Calculate my costs &rarr;</div>
+        <div class="aud-card-arrow es">Calcular mis costos &rarr;</div>
+      </div>
+      <div class="aud-card" onclick="setAudience('owner')">
+        <div class="aud-card-num">02</div>
+        <div class="aud-card-title en">I am a Property Owner</div>
+        <div class="aud-card-title es">Soy Dueño de Propiedad</div>
+        <div class="aud-card-desc en">I own property on or near the Broadway corridor in Washington Heights.</div>
+        <div class="aud-card-desc es">Soy dueño de una propiedad en o cerca del corredor de Broadway en Washington Heights.</div>
+        <div class="aud-card-arrow en">Calculate my assessment &rarr;</div>
+        <div class="aud-card-arrow es">Calcular mi evaluación &rarr;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALCULATOR VIEW -->
+  <div class="calculator-view" id="calculatorView">
+
+    <div class="calc-header">
+      <div class="calc-header-top">
+        <button class="back-btn" onclick="goBack()">&larr; <span class="en-inline">Back</span><span class="es-inline">Volver</span></button>
+        <span class="audience-badge" id="audienceBadge"></span>
+      </div>
+      <div class="calc-header-body">
+        <div class="calc-header-overline en">Washington Heights BID Formation</div>
+        <div class="calc-header-overline es">Formación del BID de Washington Heights</div>
+        <h1 id="headerTitleEn" class="en"></h1>
+        <h1 id="headerTitleEs" class="es"></h1>
+        <p id="headerSubEn" class="en"></p>
+        <p id="headerSubEs" class="es"></p>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- ASSESSMENT -->
+      <div class="section">
+        <div class="section-label en">Your Assessment</div>
+        <div class="section-label es">Su Evaluación</div>
+        <h2 class="section-title en">The formula</h2>
+        <h2 class="section-title es">La fórmula</h2>
+        <p class="section-sub en" id="assessSubEn"></p>
+        <p class="section-sub es" id="assessSubEs"></p>
+
+        <div class="formula-block">
+          <div class="formula-label en">Assessment Formula / Annual</div>
+          <div class="formula-label es">Fórmula de Evaluación / Anual</div>
+          <div class="formula-eq en">
+            (<span class="hl">$69.63</span> &times; frontage in feet)<br>
+            + (<span class="hl">$0.1768</span> &times; total sq ft)<br>
+            = Annual Assessment<br>
+            &divide; 12 = Monthly Payment
+          </div>
+          <div class="formula-eq es">
+            (<span class="hl">$69.63</span> &times; pies de frente)<br>
+            + (<span class="hl">$0.1768</span> &times; pies cuadrados totales)<br>
+            = Evaluación Anual<br>
+            &divide; 12 = Pago Mensual
+          </div>
+        </div>
+
+        <!-- FRONTAGE SLIDER -->
+        <div class="slider-group">
+          <div class="slider-head">
+            <div>
+              <label class="en">Storefront frontage (street-facing width)</label>
+              <label class="es">Frente del local (ancho hacia la calle)</label>
+            </div>
+            <span class="hint en">e.g. 12 ft wide = 12</span>
+            <span class="hint es">ej. 12 pies de ancho = 12</span>
+          </div>
+          <div class="slider-number" id="frontage-display">20 <small class="en-inline">ft</small><small class="es-inline">pies</small></div>
+          <input type="range" id="frontage" min="5" max="100" step="1" value="20" oninput="onSlide()" />
+          <div class="slider-minmax"><span>5 ft</span><span>100 ft</span></div>
+        </div>
+
+        <!-- SQFT SLIDER -->
+        <div class="slider-group">
+          <div class="slider-head">
+            <div>
+              <label class="en">Total square footage</label>
+              <label class="es">Pies cuadrados totales</label>
+            </div>
+            <span class="hint en">total interior area</span>
+            <span class="hint es">área interior total</span>
+          </div>
+          <div class="slider-number" id="sqft-display">1,000 <small class="en-inline">sq ft</small><small class="es-inline">pies²</small></div>
+          <input type="range" id="sqft" min="100" max="6000" step="50" value="1000" oninput="onSlide()" />
+          <div class="slider-minmax"><span>100 sq ft</span><span>6,000 sq ft</span></div>
+        </div>
+
+        <!-- RESULT -->
+        <div class="result-strip">
+          <div>
+            <div class="result-main-label en">Annual Assessment</div>
+            <div class="result-main-label es">Evaluación Anual</div>
+            <div class="result-main-number" id="annual-result">$—</div>
+          </div>
+          <div class="result-secondary">
+            <div class="rs-item">
+              <div class="rs-label en">Per Month</div>
+              <div class="rs-label es">Por Mes</div>
+              <div class="rs-value" id="monthly-result">$—</div>
+            </div>
+            <div class="rs-item">
+              <div class="rs-label en">Per Week</div>
+              <div class="rs-label es">Por Semana</div>
+              <div class="rs-value" id="weekly-result">$—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="breakdown-row">
+          <div class="breakdown-cell">
+            <div class="bc-label en">Frontage component</div>
+            <div class="bc-label es">Componente de fachada</div>
+            <div class="bc-value" id="frontage-component">$—</div>
+            <div class="bc-sub en">$69.63 &times; frontage ft</div>
+            <div class="bc-sub es">$69.63 &times; pies de frente</div>
+          </div>
+          <div class="breakdown-cell">
+            <div class="bc-label en">Square footage component</div>
+            <div class="bc-label es">Componente de área</div>
+            <div class="bc-value" id="sqft-component">$—</div>
+            <div class="bc-sub en">$0.1768 &times; total sq ft</div>
+            <div class="bc-sub es">$0.1768 &times; pies² totales</div>
+          </div>
+        </div>
+
+        <!-- MERCHANT NOTE -->
+        <div class="context-note merchant-only">
+          <p class="en"><strong>Important:</strong> This assessment is your landlord's legal responsibility. Whether it reaches you depends on your lease. Ask your landlord directly how they plan to handle it before the BID moves forward.</p>
+          <p class="es"><strong>Importante:</strong> Esta evaluación es responsabilidad legal de su arrendador. Si se le transfiere depende de su contrato. Pregúntele directamente a su arrendador cómo planea manejarlo antes de que el BID avance.</p>
+        </div>
+
+        <!-- OWNER NOTE + DISTRIBUTION -->
+        <div class="owner-only">
+          <div class="context-note">
+            <p class="en"><strong>Note:</strong> This is your legal responsibility as the property owner. You decide whether to absorb it or pass it through to tenants. CLOTH encourages you to communicate your decision to tenants clearly and in advance.</p>
+            <p class="es"><strong>Nota:</strong> Esta es su responsabilidad legal como dueño de propiedad. Usted decide si absorberla o transferirla a los inquilinos. CLOTH le recomienda comunicar su decisión a los inquilinos con claridad y anticipación.</p>
+          </div>
+          <div class="dist-block">
+            <div class="dist-label en">The long-term case for formation</div>
+            <div class="dist-label es">El caso a largo plazo para la formación</div>
+            <div style="background:var(--orange);color:white;padding:18px 20px;margin-top:12px;">
+              <div style="font-size:36px;font-weight:700;line-height:1;">30.7%</div>
+              <div style="font-size:13px;margin-top:6px;opacity:0.9;" class="en">Average increase in commercial property value inside BID boundaries vs. comparable properties outside them — NYU Furman Center</div>
+              <div style="font-size:13px;margin-top:6px;opacity:0.9;" class="es">Aumento promedio en el valor de propiedades comerciales dentro de los límites de un BID vs. propiedades comparables fuera de ellos — NYU Furman Center</div>
+            </div>
+            <p style="font-size:11px;color:var(--mid);margin-top:10px;" class="en">This is a long-term average across NYC BIDs, not a guarantee. The annual assessment is the cost of building toward it. How you handle that cost in relation to your tenants is a choice that shapes whether the corridor thrives.</p>
+            <p style="font-size:11px;color:var(--mid);margin-top:10px;" class="es">Este es un promedio a largo plazo en los BIDs de NYC, no una garantía. La evaluación anual es el costo de construir hacia ese resultado. Cómo maneja ese costo en relación a sus inquilinos es una decisión que determina si el corredor prospera.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAX SECTION (merchant only) -->
+      <div class="tax-section">
+        <div class="section-label en">Tax Deduction Estimator</div>
+        <div class="section-label es">Estimador de Deducción de Impuestos</div>
+        <h2 class="section-title en">What you actually pay</h2>
+        <h2 class="section-title es">Lo que realmente paga</h2>
+        <p class="section-sub en">If the assessment is passed to you as a tenant, it likely qualifies as a deductible business expense under IRS rules.</p>
+        <p class="section-sub es">Si la evaluación se le transfiere como inquilino, es probable que califique como gasto comercial deducible según las reglas del IRS.</p>
+
+        <div class="slider-group">
+          <div class="slider-head">
+            <div>
+              <label class="en">Your estimated federal tax bracket</label>
+              <label class="es">Su categoría impositiva federal estimada</label>
+            </div>
+          </div>
+          <div class="slider-number" id="bracket-display">22%</div>
+          <input type="range" id="bracket" min="0" max="6" step="1" value="2" oninput="onBracketSlide(this)" />
+          <div class="slider-minmax"><span>10%</span><span>12%</span><span>22%</span><span>24%</span><span>32%</span><span>35%</span><span>37%</span></div>
+        </div>
+
+        <div class="tax-grid">
+          <div class="tax-cell">
+            <div class="tc-label en">Annual Assessment</div>
+            <div class="tc-label es">Evaluación Anual</div>
+            <div class="tc-value" id="tax-gross">$—</div>
+            <div class="tc-sub en">before deduction</div>
+            <div class="tc-sub es">antes de deducción</div>
+          </div>
+          <div class="tax-cell">
+            <div class="tc-label en">Tax Savings</div>
+            <div class="tc-label es">Ahorro en Impuestos</div>
+            <div class="tc-value" id="tax-savings">$—</div>
+            <div class="tc-sub en">estimated value</div>
+            <div class="tc-sub es">valor estimado</div>
+          </div>
+          <div class="tax-cell">
+            <div class="tc-label en">Net Real Cost</div>
+            <div class="tc-label es">Costo Neto Real</div>
+            <div class="tc-value" id="tax-net">$—</div>
+            <div class="tc-sub en">what you actually pay</div>
+            <div class="tc-sub es">lo que realmente paga</div>
+          </div>
+        </div>
+
+        <p class="tax-disclaimer en">Note: Tax deductibility applies when the BID assessment qualifies as an ordinary and necessary business expense. Always verify with a licensed tax professional.</p>
+        <p class="tax-disclaimer es">Nota: La deducibilidad fiscal aplica cuando la evaluación del BID califica como un gasto comercial ordinario y necesario. Siempre verifique con un profesional de impuestos con licencia.</p>
+      </div>
+
+      <!-- COMPARISON (merchant only) -->
+      <div class="comp-section">
+        <div class="section-label en">Cost Comparison</div>
+        <div class="section-label es">Comparación de Costos</div>
+        <h2 class="section-title en">What are you already spending?</h2>
+        <h2 class="section-title es">¿Cuánto está gastando ya?</h2>
+        <p class="section-sub en">Many merchants already pay informally for services a BID would provide. Enter what you currently spend to see how the assessment compares.</p>
+        <p class="section-sub es">Muchos comerciantes ya pagan informalmente por servicios que un BID proveería. Ingrese lo que gasta actualmente para ver cómo se compara con la evaluación.</p>
+
+        <div class="comp-inputs">
+          <div class="comp-field">
+            <label class="en">Cleaning supplies / private cleaning (annual)</label>
+            <label class="es">Limpieza / suministros (anual)</label>
+            <input type="number" id="comp-cleaning" placeholder="e.g. 600" oninput="updateComparison()" />
+          </div>
+          <div class="comp-field">
+            <label class="en">Private security (annual)</label>
+            <label class="es">Seguridad privada (anual)</label>
+            <input type="number" id="comp-security" placeholder="e.g. 1200" oninput="updateComparison()" />
+          </div>
+          <div class="comp-field">
+            <label class="en">Maintenance / repairs (annual)</label>
+            <label class="es">Mantenimiento / reparaciones (anual)</label>
+            <input type="number" id="comp-maintenance" placeholder="e.g. 400" oninput="updateComparison()" />
+          </div>
+          <div class="comp-field">
+            <label class="en">Other related costs (annual)</label>
+            <label class="es">Otros costos relacionados (anual)</label>
+            <input type="number" id="comp-other" placeholder="e.g. 200" oninput="updateComparison()" />
+          </div>
+        </div>
+
+        <div class="comp-result-row">
+          <div class="comp-cell">
+            <div class="cc-label en">What you currently spend</div>
+            <div class="cc-label es">Lo que gasta actualmente</div>
+            <div class="cc-value" id="comp-current">$0</div>
+            <div class="cc-sub en">per year on these services</div>
+            <div class="cc-sub es">por año en estos servicios</div>
+          </div>
+          <div class="comp-cell">
+            <div class="cc-label en">Your BID assessment</div>
+            <div class="cc-label es">Su evaluación del BID</div>
+            <div class="cc-value" id="comp-bid">$—</div>
+            <div class="cc-sub en">per year (if passed through)</div>
+            <div class="cc-sub es">por año (si se le transfiere)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPERTY VALUE (owner only) -->
+      <div class="propval-section">
+        <div class="section-label en">Research</div>
+        <div class="section-label es">Investigación</div>
+        <h2 class="section-title en">What the data shows</h2>
+        <h2 class="section-title es">Lo que dicen los datos</h2>
+        <p class="section-sub en">Understanding the broader impact of BID formation on property values in New York City.</p>
+        <p class="section-sub es">Entendiendo el impacto más amplio de la formación del BID en el valor de las propiedades en Nueva York.</p>
+
+        <div class="context-note">
+          <p class="en">Research on NYC BIDs found that commercial properties inside BID boundaries sold for <strong>30.7% more</strong> than comparable properties outside them. That benefits property owners. It also puts pressure on commercial rents, which affects the tenant businesses in your building. CLOTH encourages you to think about both sides of that as formation moves forward.</p>
+          <p class="es">Una investigación sobre los BIDs de Nueva York encontró que las propiedades comerciales dentro de los límites de un BID se vendieron un <strong>30.7% más</strong> que propiedades comparables fuera de ellos. Eso beneficia a los dueños de propiedades. También ejerce presión sobre los alquileres comerciales, lo que afecta a los negocios en su edificio. CLOTH le recomienda considerar ambos lados de esa ecuación mientras avanza la formación.</p>
+        </div>
+
+        <div class="context-note" style="margin-top:16px;">
+          <p class="en">The businesses that stay are the ones that make the neighborhood worth investing in.</p>
+          <p class="es">Los negocios que se quedan son los que hacen que el vecindario valga la pena.</p>
+        </div>
+      </div>
+
+      <div class="calc-footer">
+        <span class="en">Provided by CLOTH for informational purposes. Assessment figures are based on the proposed Washington Heights BID formula and are subject to change. Contact CLOTH at cloth159.org</span>
+        <span class="es">Proporcionado por CLOTH con fines informativos. Las cifras se basan en la fórmula propuesta del BID de Washington Heights y están sujetas a cambios. Comuníquese con CLOTH en cloth159.org</span>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const BRACKETS = [
+      { rate: 0.10, label: "10%" },
+      { rate: 0.12, label: "12%" },
+      { rate: 0.22, label: "22%" },
+      { rate: 0.24, label: "24%" },
+      { rate: 0.32, label: "32%" },
+      { rate: 0.35, label: "35%" },
+      { rate: 0.37, label: "37%" },
+    ];
+
+    let activeBracket = 2;
+    let currentAnnual = 0;
+
+    const content = {
+      merchant: {
+        badge: { en: "Merchant View", es: "Vista Comerciante" },
+        title: { en: "What Would a BID Cost Your Business?", es: "¿Cuánto le Costaría un BID a su Negocio?" },
+        sub: { en: "See your estimated assessment, potential tax savings, and how it compares to what you already spend.", es: "Vea su evaluación estimada, posibles ahorros fiscales, y cómo se compara con lo que ya gasta." },
+        assessSub: { en: "The assessment is calculated using your storefront's frontage and square footage. This is your landlord's legal responsibility. Whether it reaches you depends on your lease.", es: "La evaluación se calcula usando el frente y los pies cuadrados de su local. Esta es la responsabilidad legal de su arrendador. Si llega a usted depende de su contrato." }
+      },
+      owner: {
+        badge: { en: "Property Owner View", es: "Vista Dueño de Propiedad" },
+        title: { en: "What Would a BID Cost Your Property?", es: "¿Cuánto le Costaría un BID a su Propiedad?" },
+        sub: { en: "Calculate your legal assessment obligation and see what it means as a long-term investment in your property.", es: "Calcule su obligación legal de evaluación y vea lo que significa como inversión a largo plazo en su propiedad." },
+        assessSub: { en: "The assessment is your legal responsibility as the property owner. Use the sliders to calculate your total annual obligation.", es: "La evaluación es su responsabilidad legal como dueño de propiedad. Use los controles para calcular su obligación anual total." }
+      }
+    };
+
+    function setLang(lang) {
+      document.body.classList.toggle('lang-es', lang === 'es');
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.lang-btn')[lang === 'en' ? 0 : 1].classList.add('active');
+      const badge = document.getElementById('audienceBadge');
+      if (badge.dataset.en) badge.textContent = lang === 'es' ? badge.dataset.es : badge.dataset.en;
+    }
+
+    function setAudience(audience) {
+      document.body.classList.remove('audience-merchant', 'audience-owner');
+      document.body.classList.add('audience-' + audience);
+
+      const c = content[audience];
+      const isEs = document.body.classList.contains('lang-es');
+      const badge = document.getElementById('audienceBadge');
+      badge.textContent = isEs ? c.badge.es : c.badge.en;
+      badge.dataset.en = c.badge.en;
+      badge.dataset.es = c.badge.es;
+
+      document.getElementById('headerTitleEn').textContent = c.title.en;
+      document.getElementById('headerTitleEs').textContent = c.title.es;
+      document.getElementById('headerSubEn').textContent = c.sub.en;
+      document.getElementById('headerSubEs').textContent = c.sub.es;
+      document.getElementById('assessSubEn').textContent = c.assessSub.en;
+      document.getElementById('assessSubEs').textContent = c.assessSub.es;
+
+      document.getElementById('audienceScreen').style.display = 'none';
+      document.getElementById('calculatorView').classList.add('active');
+
+      setPct(document.getElementById('frontage'), 5, 100);
+      setPct(document.getElementById('sqft'), 100, 6000);
+      setPct(document.getElementById('bracket'), 0, 6);
+      onSlide();
+    }
+
+    function goBack() {
+      document.getElementById('audienceScreen').style.display = 'flex';
+      document.getElementById('calculatorView').classList.remove('active');
+      document.body.classList.remove('audience-merchant', 'audience-owner');
+    }
+
+    function fmt(n) {
+      return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function setPct(el, min, max) {
+      const pct = ((parseFloat(el.value) - min) / (max - min)) * 100;
+      el.style.setProperty('--pct', pct + '%');
+    }
+
+    function onSlide() {
+      const frontage = parseInt(document.getElementById('frontage').value);
+      const sqft = parseInt(document.getElementById('sqft').value);
+
+      setPct(document.getElementById('frontage'), 5, 100);
+      setPct(document.getElementById('sqft'), 100, 6000);
+
+      document.getElementById('frontage-display').innerHTML =
+        frontage + ' <small class="en-inline">ft</small><small class="es-inline">pies</small>';
+      document.getElementById('sqft-display').innerHTML =
+        sqft.toLocaleString() + ' <small class="en-inline">sq ft</small><small class="es-inline">pies²</small>';
+
+      const frontageAmt = frontage * 69.63;
+      const sqftAmt = sqft * 0.1768;
+      currentAnnual = frontageAmt + sqftAmt;
+
+      document.getElementById('annual-result').textContent = fmt(currentAnnual);
+      document.getElementById('monthly-result').textContent = fmt(currentAnnual / 12);
+      document.getElementById('weekly-result').textContent = fmt(currentAnnual / 52);
+      document.getElementById('frontage-component').textContent = fmt(frontageAmt);
+      document.getElementById('sqft-component').textContent = fmt(sqftAmt);
+
+      updateTax();
+      
+      updateComparison();
+    }
+
+    function onBracketSlide(el) {
+      activeBracket = parseInt(el.value);
+      setPct(el, 0, 6);
+      document.getElementById('bracket-display').textContent = BRACKETS[activeBracket].label;
+      updateTax();
+    }
+
+    function updateTax() {
+      const rate = BRACKETS[activeBracket].rate;
+      document.getElementById('tax-gross').textContent = fmt(currentAnnual);
+      document.getElementById('tax-savings').textContent = fmt(currentAnnual * rate);
+      document.getElementById('tax-net').textContent = fmt(currentAnnual * (1 - rate));
+    }
+
+
+
+    function updateComparison() {
+      const total =
+        (parseFloat(document.getElementById('comp-cleaning').value) || 0) +
+        (parseFloat(document.getElementById('comp-security').value) || 0) +
+        (parseFloat(document.getElementById('comp-maintenance').value) || 0) +
+        (parseFloat(document.getElementById('comp-other').value) || 0);
+      document.getElementById('comp-current').textContent = fmt(total);
+      document.getElementById('comp-bid').textContent = currentAnnual > 0 ? fmt(currentAnnual) : '$—';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setPct(document.getElementById('bracket'), 0, 6);
+    });
+  </script>
+</body>
+</html>
